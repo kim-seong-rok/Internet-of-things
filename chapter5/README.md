@@ -1,6 +1,3 @@
-위에 잘했어 밑에 5장의 README도 너가 했던것처럼 하나하나 다른사람이 적은 것처럼 한번 바
-꿔줘봐
-
 Explations on the examples in chapter 5
 5-1 외부 함수의 변수를 참조하는 내부 함수(1)
 var outer = function() {
