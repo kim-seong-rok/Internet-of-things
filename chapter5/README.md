@@ -48,6 +48,7 @@ console.log(outer2());
 
 ---
 
+
 ## 5-4 return 없이도 클로저가 발생하는 다양한 경우
 ### (1) setInterval/setTimeout 예제
 ```javascript
@@ -99,34 +100,16 @@ console.log(outer());
 console.log(outer());
 outer = null; // outer 식별자의 inner 함수 참조를 끊음
 
-// (2) setInterval에 의한 클로저의 메모리 해제
-(function(){
-    var a = 0;
-    var intervalId = null;
-    var inner = function(){
-        if (++a>=10){
-            clearInterval(intervalId);
-            inner = null;   // inner 식별자의 함수 참조를 끊음
-        }
-        console.log(a);
-    };
-    intervalId = setInterval(inner,1000);
-})();
 
-// (3) eventListener에 의한 클로저의 메모리 해제
-(function(){
-    var count = 0;
-    var button = document.createElement('button');
-    button.innerText='click';
 
-    var clickHandler = function(){
-        console.log(++count,'times clicked');
-        if(count>=10){
-            button.removeEventListener('click',clickHandler);
-            clickHandler=null; // clickHandler 식별자의 함수 참조를 끊음
-        }
-    }
-})
+
+---
+
+## 5-5 클로저의 메모리 관리
+### 클로저의 수명과 해제 시점, 메모리 누수 방지를 위한 패턴을 설명.
+
+---
+
 
 클로저의 특성을 정확히 이해해야 메모리 누수등의 위험을 최소화 할 수 있다.
 하지만, 최근의 자바스크립트 엔진에서는 위와 같은 위험이 크게 줄어들었고, 개발자의 의도하에 생기는 메모리 소비에 대한 관리법만 잘 파악해서 적용하면 충분하다.
@@ -142,15 +125,10 @@ outer = null; // outer 식별자의 inner 함수 참조를 끊음
 var fruits = ['apple','banana','peach'];
 var $ul = document.createElement('ul');
 
-fruits.forEach(function(fruit){
-    var $li = document.createElement('li');
-    $li.innerText = fruit;
-    $li.addEventListener('click',function(){
-        alert('your choice is '+fruit);
-    });
-    $ul.appendChild($li);
-});
-document.body.appendChild($ul);
+
+
+---
+
 
 대표적인 콜백 함수 중 하나인 이벤트 리스너에 관한 예시이다.
 클로저의 '외부 데이터'에 주목하면서 흐름을 따라가자.
@@ -162,18 +140,14 @@ document.body.appendChild($ul);
 var fruits = ['apple','banana','peach'];
 var $ul = document.createElement('ul');
 
-var alertFruit = function (fruit){
-    alert('your choice is '+fruit);
-};
 
-fruits.forEach(function(fruit){
-    var $li = document.createElement('li');
-    $li.innerText = fruit;
-    $li.addEventListener('click',alertFruit);
-    $ul.appendChild($li);
-});
-document.body.appendChild($ul);
-alertFruit(fruits[1]);
+
+
+---
+
+## 5-11 클로저로 변수를 보호한 자동차 객체(1)
+> 클로저를 활용한 은닉 변수 구성, getter만 제공하는 구조.
+
 
 공통 함수로 쓰고자 콜백 함수를 외부로 꺼내어 alertFruit라는 변수에 담았다.
 이제 alertFruit을 직접 실행할 수 있다.
@@ -187,18 +161,14 @@ alertFruit(fruits[1]);
 var fruits = ['apple','banana','peach'];
 var $ul = document.createElement('ul');
 
-var alertFruit = function (fruit){
-    alert('your choice is '+fruit);
-};
+---
 
-fruits.forEach(function(fruit){
-    var $li = document.createElement('li');
-    $li.innerText = fruit;
-    $li.addEventListener('click',alertFruit.bind(null,fruit));
-    $ul.appendChild($li);
-});
-document.body.appendChild($ul);
-alertFruit(fruits[1]);
+
+## 5-12 클로저로 변수를 보호한 자동차 객체(2)
+> `Object.freeze`로 외부 수정도 차단한 구조.
+
+---
+
 
 예제 5-7의 [object MouseEvent]라는 값이 출력되는 문제를 해결했다.
 하지만 이벤트 객체가 인자로 넘어오는 순서가 바뀌는 점 및 함수 내부에서의 this가 원래의 그것과 달라지는 점은 감안해야 한다.
@@ -211,20 +181,17 @@ alertFruit(fruits[1]);
 var fruits = ['apple','banana','peach'];
 var $ul = document.createElement('ul');
 
-var alertFruitBuilder = function (fruit){
-    return function(){
-        alert('your choice is '+fruit);
-    }
-};
+## 5-13 ~ 5-15 부분 적용 함수 구현
+- `bind`를 통한 부분 적용
+- 직접 구현한 `partial` 함수
+- 자리 지정자 `_` 활용하여 인자 순서 유연화
 
-fruits.forEach(function(fruit){
-    var $li = document.createElement('li');
-    $li.innerText = fruit;
-    $li.addEventListener('click',alertFruitBuilder(fruit));
-    $ul.appendChild($li);
-});
-document.body.appendChild($ul);
-alertFruit(fruits[1]);
+
+---
+
+## 5-16 디바운스 구현
+> 실무에서 사용되는 디바운스 로직 구현 예제.
+
 
 alertFruit 함수 대신 alertFruitBuilder라는 이름의 함수를 작성하였다.
 이 함수 내부에서는 다시 익명함수를 반환하는데, 이 익명함수가 바로 기존의 alertFruit 함수이다.
@@ -374,3 +341,21 @@ const curry5 = func => a => b => c => d => e => func(a, b, c, d, e);
 > 커링 함수는 인자들을 나눠서 순차적으로 받을 수 있게 하며, 함수형 프로그래밍에서 지연 실행을 가능하게 한다.
 
 ---
+
+---
+
+## 5-17 커링 함수(1)
+> 2단계 커링 함수 구조, `Math.max`에 적용한 사례.
+
+---
+
+## 5-18 커링 함수(2)
+> 5단계 커링 구조 및 화살표 함수 적용 예제.
+
+```javascript
+const curry5 = func => a => b => c => d => e => func(a, b, c, d, e);
+```
+> 커링 함수는 인자들을 나눠서 순차적으로 받을 수 있게 하며, 함수형 프로그래밍에서 지연 실행을 가능하게 한다.
+
+---
+
